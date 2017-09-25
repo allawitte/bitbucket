@@ -2,11 +2,13 @@
     cursor: default;
     color: #4d99bf;
 }
+
 .list .file, .list li.folder {
     cursor: pointer;
     color: #006600;
     position: relative;
 }
+
 li.file:hover:after {
     content: 'click to pdf';
     position: absolute;
@@ -15,3 +17,19 @@ li.file:hover:after {
     border-radius: 3px;
     background-color: #fafafa;
 }
+
+header {
+    margin-bottom: 20px;
+    background: url(http://test-mobile.allawitte.nl/i/logo.svg) no-repeat 1% 35%;
+    background-size: auto 150px;
+    background-color: #00acf2;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    color: #fff;
+}
+
+header h2 {
+    padding: 30px 0;
+}
+

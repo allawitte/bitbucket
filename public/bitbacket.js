@@ -4,12 +4,15 @@ const dataRequest = new XMLHttpRequest();
 const phpSend = new XMLHttpRequest();
 const toEmail = new XMLHttpRequest();
 const pathTo = 'https://api.bitbucket.org/2.0/repositories/allawitte';
-var token, currentRepo;
+
 const listContainer = document.querySelector('.list');
 const frame = document.getElementById('frame');
 const mail = document.getElementById('mail');
-const formData = {};
+const emailInput = document.getElementById('email');
+const textInput = document.getElementById('text');
+const formData = {}, emailData = {};
 var currentDirName;
+var token, currentRepo;
 
 
 listContainer.addEventListener('click', parseRepo);
@@ -19,12 +22,29 @@ dataRequest.addEventListener('load', showRaw);
 phpSend.addEventListener('load', htmlSendResult);
 window.addEventListener('load', getWindow);
 mail.addEventListener('click', sendByMail);
+emailInput.addEventListener('blur', checkEmail);
+emailInput.addEventListener('keydown', releaseEmail);
+
+function checkEmail(e) {
+    let email = e.target;
+    if (!email.value.match(/.+@.+\..+/i)) {
+        email.classList.toggle('border-danger');
+        mail.setAttribute('disabled', true);
+    }
+}
+
+function releaseEmail(e) {
+    e.target.classList.toggle('border-danger');
+    mail.removeAttribute('disabled');
+}
 
 function sendByMail(e) {
     e.preventDefault();
     toEmail.open('POST', '/email/');
+    emailData.mail = emailInput.value;
+    emailData.text = textInput.value;
     toEmail.setRequestHeader('Content-Type', 'application/json');
-    toEmail.send(JSON.stringify(formData));
+    toEmail.send(JSON.stringify(emailData));
 }
 
 function htmlSendResult() {
@@ -53,7 +73,7 @@ function getWindow() {
     token = window.location.hash.match(nov_reg)[1];
     xhr.open('GET',
         pathTo +
-        '?access_token=' + token+'&pagelen=100');
+        '?access_token=' + token + '&pagelen=100');
     xhr.send();
 }
 
@@ -111,7 +131,7 @@ function showRaw() {
         let htmlMatch = data.match(/[\w*|\W*]*<[[\w*|\W*]*|\/[\w*|\W*]]>[\w*|\W*]*/);
         let head = data.match(/<head>(.*)<\/head>/gi);
         let cssLinks;
-        if(head){
+        if (head) {
             head = head[0].replace(/> *</g, '>\n\r<');
             cssLinks = head.match(/rel="stylesheet"(.*)href="(.*)\.css/gi);
         }
@@ -126,15 +146,15 @@ function showRaw() {
         console.log('data', data);
 
         if (cssLinks) {
-            let cssPaths = cssLinks.map(item=>currentDirName + item.match(/href="([\w\/\.-]*)/)[1]+'?access_token=' + token);
+            let cssPaths = cssLinks.map(item=>currentDirName + item.match(/href="([\w\/\.-]*)/)[1] + '?access_token=' + token);
             let style = '<style>';
             Promise.all(cssPaths.map(url => fetch(url))).then(responses =>
                 Promise.all(responses.map(res => res.text())
                 ).then(texts => {
-                        style +=texts;
+                        style += texts;
                     })).then(()=> {
-                style+='.chapter h2, #cover h2 {margin-top: 35%}</style>';
-                formData.fileContent = data.replace(/<\/head>/, style+'</head>');
+                style += '.chapter h2, #cover h2 {margin-top: 35%}</style>';
+                formData.fileContent = data.replace(/<\/head>/, style + '</head>');
                 if (htmlMatch.length) {
                     phpSend.open('POST', '/html/');
                     phpSend.setRequestHeader('Content-Type', 'application/json');
@@ -154,7 +174,7 @@ function parseRepo(e) {
     currentRepo = e.target;
     if (currentRepo.tagName == 'LI') {
         let slug = currentRepo.dataset.slug;
-        let path = slug ? pathTo + '/' + slug + '/src/master/' + '?access_token=' + token : currentRepo.dataset.link + '?access_token=' + token+'&page=2&pagelen=10';
+        let path = slug ? pathTo + '/' + slug + '/src/master/' + '?access_token=' + token : currentRepo.dataset.link + '?access_token=' + token + '&page=2&pagelen=10';
         request.open('GET', path);
         request.send();
     }
