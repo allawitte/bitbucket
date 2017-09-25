@@ -1,0 +1,17 @@
+.list li {
+    cursor: default;
+    color: #4d99bf;
+}
+.list .file, .list li.folder {
+    cursor: pointer;
+    color: #006600;
+    position: relative;
+}
+li.file:hover:after {
+    content: 'click to pdf';
+    position: absolute;
+    top: -10px;
+    padding: 4px;
+    border-radius: 3px;
+    background-color: #fafafa;
+}
